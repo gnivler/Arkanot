@@ -11,9 +11,8 @@ GameObject:
   - component: {fileID: 931098981725447250}
   - component: {fileID: 931098981725447251}
   - component: {fileID: 931098981725447248}
-  - component: {fileID: 931098981725447249}
   - component: {fileID: 931098981725447262}
-  - component: {fileID: 931098981725447263}
+  - component: {fileID: 931098981725447249}
   - component: {fileID: 931098981725447253}
   m_Layer: 0
   m_Name: Ball
@@ -82,19 +81,6 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
---- !u!135 &931098981725447249
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 931098981725447260}
-  m_Material: {fileID: 13400000, guid: 9f93f63d068b08c459038c40fce897d8, type: 2}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &931098981725447262
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -107,16 +93,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f4f0af57c209fab4f83b6fbe4543d0c0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxSpeed: 7.5
---- !u!135 &931098981725447263
+  maxSpeed: 30
+--- !u!135 &931098981725447249
 SphereCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 931098981725447260}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 1
+  m_Material: {fileID: 13400000, guid: c2815a7ab32e42c4bb42f59caacb8ec1, type: 2}
+  m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
   m_Radius: 0.5

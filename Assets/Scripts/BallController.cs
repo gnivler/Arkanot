@@ -1,10 +1,10 @@
 ﻿using UnityEngine;
 
-[RequireComponent(typeof(SphereCollider), typeof(SphereCollider))]
+[RequireComponent(typeof(SphereCollider))]
 public class BallController : MonoBehaviour
 {
     private Rigidbody ballRb;
-    public float maxSpeed = 10f;
+    public float maxSpeed;
 
     private void Start()
     {
@@ -16,7 +16,7 @@ public class BallController : MonoBehaviour
     {
         // mitigate stuff passing through objects by limiting velocity
         //https://answers.unity.com/questions/9985/limiting-rigidbody-velocity.html
-        LimitVelocity();
+        //LimitVelocity();
     }
 
     private void LimitVelocity()

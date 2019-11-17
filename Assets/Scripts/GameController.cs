@@ -3,13 +3,16 @@ using System.Collections;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
+// ReSharper disable InconsistentNaming
+
+[RequireComponent(typeof(PlayerController), typeof(BallController), typeof(TargetController))]
 public class GameController : MonoBehaviour
 {
     [NonSerialized] public static GameController instance;
     public GameObject prefab;
     public GameObject ball;
     public GameObject player;
-    public float paddleForce = 2f;
+    public float paddleForce;
     private Rigidbody playerRb;
     private Rigidbody ballRb;
     private const float upperBound = 4.4f;
@@ -22,6 +25,7 @@ public class GameController : MonoBehaviour
         // setup Singleton
         instance = this;
 
+        // spawn the ball, which sticks to the paddle via BallController.Start()
         playerRb = player.GetComponent<Rigidbody>();
         ball = Instantiate(prefab);
         ballRb = ball.GetComponent<Rigidbody>();
@@ -33,8 +37,11 @@ public class GameController : MonoBehaviour
         var hotkey = Input.GetKeyDown(KeyCode.Space);
         if (ballCaught && hotkey)
         {
+            // push slightly left or right randomly
             Debug.Log("Push!");
-            ballRb.AddForce(new Vector3(Random.Range(-1f, 1f), 1, 0) * 10, ForceMode.Impulse);
+            var random = Random.Range(-0.5f, 0.5f);
+            ballRb.AddForce(paddleForce * Time.deltaTime * new Vector3(random, 1, 0), ForceMode.Impulse);
+            // release the ball
             ball.transform.SetParent(transform.root);
             ballCaught = false;
         }
@@ -70,5 +77,13 @@ public class GameController : MonoBehaviour
         ball.transform.position = playerRb.transform.position + new Vector3(0, 0.15f, 0);
         // flag prevents it from shooting without pressing space
         ballCaught = true;
+    }
+
+    // https://docs.unity3d.com/Manual/DirectionDistanceFromOneObjectToAnother.html
+    internal Vector3 GetDirection(Vector3 source, Vector3 target)
+    {
+        var heading = source - target;
+        var distance = heading.magnitude;
+        return heading / distance;
     }
 }

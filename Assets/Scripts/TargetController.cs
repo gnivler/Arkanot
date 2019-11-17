@@ -1,16 +1,18 @@
-﻿using UnityEngine;
+﻿using System.Net.Mime;
+using UnityEngine;
 
+[RequireComponent(typeof(BoxCollider))]
 public class TargetController : MonoBehaviour
 {
-    private void OnTriggerEnter(Collider other)
+    private void OnCollisionEnter(Collision other)
     {
-        // destroy the target and send the ball flying
+        // destroy the target and send the ball flying back the way it came
         Debug.Log($"Collided with {gameObject.name}");
         var instance = GameController.instance;
-        var inverseVector = instance.ball.transform.position.normalized * -1;
         var paddleForce = instance.paddleForce;
-        instance.ball.GetComponent<Rigidbody>().AddForce(inverseVector * paddleForce, ForceMode.Impulse);
-        
+        var direction = instance.GetDirection(transform.position, other.transform.position);
+        instance.ball.GetComponent<Rigidbody>().AddForce(paddleForce * Time.deltaTime * -direction, ForceMode.Impulse);
+
         Destroy(gameObject);
     }
 }
