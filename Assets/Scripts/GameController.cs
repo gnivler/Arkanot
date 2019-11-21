@@ -1,24 +1,29 @@
 ﻿using System;
 using System.Collections;
+using System.Security.Cryptography.X509Certificates;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
 // ReSharper disable InconsistentNaming
 
-[RequireComponent(typeof(PlayerController), typeof(BallController), typeof(TargetController))]
+[RequireComponent(typeof(PlayerController), typeof(BallController), typeof(BrickController))]
 public class GameController : MonoBehaviour
 {
     [NonSerialized] public static GameController instance;
     public GameObject prefab;
-    public GameObject ball;
     public GameObject player;
     public float paddleForce;
-    private Rigidbody playerRb;
-    private Rigidbody ballRb;
-    private const float upperBound = 4.4f;
-    private const float lowerBound = -7f;
-    private const float Xbounds = 3.1f;
-    internal bool ballCaught;
+    public float paddleSpeed;
+    public static float maxBallSpeed = 30f;
+    public GameObject[] brickPrefabs = new GameObject[3];
+    internal static Rigidbody ballRb;
+    internal static bool ballCaught;
+    internal static int bricks;
+    private static GameObject ball;
+    private static Rigidbody playerRb;
+    private const float upperBound = 3.3f;
+    private const float lowerBound = -7.3f;
+    private const float Xbounds = 6.87f;
 
     public void Start()
     {
@@ -30,46 +35,86 @@ public class GameController : MonoBehaviour
         ball = Instantiate(prefab);
         ballRb = ball.GetComponent<Rigidbody>();
         ballCaught = true;
+        BuildBoard();
     }
 
     private void Update()
     {
-        var hotkey = Input.GetKeyDown(KeyCode.Space);
+        var hotkey = Input.GetKeyDown(KeyCode.Mouse0);
         if (ballCaught && hotkey)
         {
             // push slightly left or right randomly
             Debug.Log("Push!");
             var random = Random.Range(-0.5f, 0.5f);
-            ballRb.AddForce(paddleForce * Time.deltaTime * new Vector3(random, 1, 0), ForceMode.Impulse);
+            ballRb.AddForce(paddleForce * Time.fixedDeltaTime * new Vector3(random, 10, 0), ForceMode.VelocityChange);
             // release the ball
             ball.transform.SetParent(transform.root);
             ballCaught = false;
         }
     }
-
+    
     private void FixedUpdate()
     {
-        // physical bounces
-        var position = ballRb.transform.position;
-        if (position.y > upperBound)
-            ballRb.AddForce(Vector3.down, ForceMode.Impulse);
+        // physical bounces.  maintain velocity..
+        var position =  ballRb.transform.position;
+        var velocity =  ballRb.velocity.magnitude;
+        if (position.y >= upperBound)
+        {
+            ballRb.AddForce(velocity * Vector3.down, ForceMode.VelocityChange);
+        }
 
-        if (position.x < -Xbounds)
-            ballRb.AddForce(Vector3.right, ForceMode.Impulse);
+        if (position.x <= -Xbounds)
+        {
+            ballRb.AddForce(velocity * Vector3.right, ForceMode.VelocityChange);
+        }
 
-        if (position.x > Xbounds)
-            ballRb.AddForce(Vector3.left, ForceMode.Impulse);
+        if (position.x >= Xbounds)
+        {
+            ballRb.AddForce(velocity * Vector3.left, ForceMode.VelocityChange);
+        }
 
         // lost the ball
-        if (position.y < lowerBound)
+        if (position.y <= lowerBound)
         {
             StartCoroutine(Respawn());
-            Destroy(ball);
+        }
+
+        if (bricks == 0)
+        {
+            BuildBoard();
+        }
+    }
+
+
+    private void BuildBoard()
+    {
+        // board dimensions
+        var columns = 11;
+        var rows = 10;
+        var spacing = 0.1825f;
+        bricks = columns * rows;
+        var startingPosition = new Vector2(-5.9f,3.3f);
+        var brickWidth = brickPrefabs[0].GetComponent<Transform>().localScale.x;
+        var brickHeight = brickPrefabs[0].GetComponent<Transform>().localScale.y;
+        var position = startingPosition;
+        for (var row = 0; row < rows; row++)
+        {
+            for (var column = 0; column < columns; column++)
+            {
+                var randomBlock = brickPrefabs[Random.Range(0, brickPrefabs.Length)];
+                Instantiate(randomBlock, position, Quaternion.identity);
+                // move it over 
+                position += new Vector2(brickWidth + spacing, 0);
+            }
+
+            // move it down
+            position = startingPosition += new Vector2(0, -brickHeight - spacing);
         }
     }
 
     private IEnumerator Respawn()
     {
+        Destroy(ball);
         yield return new WaitForSeconds(0.5f);
         ball = Instantiate(prefab);
         ballRb = ball.GetComponent<Rigidbody>();
@@ -80,9 +125,9 @@ public class GameController : MonoBehaviour
     }
 
     // https://docs.unity3d.com/Manual/DirectionDistanceFromOneObjectToAnother.html
-    internal Vector3 GetDirection(Vector3 source, Vector3 target)
+    internal static Vector3 GetTargetDirection(Vector3 target, Vector3 source)
     {
-        var heading = source - target;
+        var heading = target - source;
         var distance = heading.magnitude;
         return heading / distance;
     }

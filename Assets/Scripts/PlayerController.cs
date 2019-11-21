@@ -3,59 +3,42 @@
 [RequireComponent(typeof(BoxCollider))]
 public class PlayerController : MonoBehaviour
 {
-    public PlayerController paddle;
-    public float speed;
     public float paddleForce;
-    private Rigidbody playerRb;
-    private float horizontalInput;
-    private const float Xbounds = 2.6f;
+    public float horizontalInput;
+    private const float paddleBoundary = 6.05f;
 
-    private void Start()
-    {
-        playerRb = GetComponent<Rigidbody>();
-        paddleForce = GameController.instance.paddleForce;
-    }
 
     private void Update()
     {
-        horizontalInput = Input.GetAxis("Horizontal");
+        horizontalInput = Input.GetAxis("Mouse X");
     }
 
     private void FixedUpdate()
     {
-        if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D))
-        {
-            transform.Translate(horizontalInput * speed * Time.fixedDeltaTime * -transform.right);
-        }
+        transform.Translate(horizontalInput * GameController.instance.paddleSpeed * Time.fixedDeltaTime * -transform.right);
 
+        // keep the paddle within bounaries
         var position = transform.position;
-        if (position.x < -Xbounds)
+        if (position.x < -paddleBoundary)
         {
-            transform.position = new Vector3(-Xbounds, position.y, position.z);
+            transform.position = new Vector3(-paddleBoundary, position.y, position.z);
         }
 
-        if (position.x > Xbounds)
+        if (position.x > paddleBoundary)
         {
-            transform.position = new Vector3(Xbounds, position.y, position.z);
-
-            // TODO make physics counter the movement?
-            // not working:
-            // var speed = Vector3.Magnitude(playerRb.velocity);
-            // var normalized = playerRb.position.normalized;
-            // playerRb.AddForce(speed * -normalized, ForceMode.VelocityChange);
+            transform.position = new Vector3(paddleBoundary, position.y, position.z);
         }
     }
 
     private void OnCollisionEnter(Collision other)
     {
         // send a moving ball back onto its incoming trajectory
-        if (other.gameObject.CompareTag("Ball") && !GameController.instance.ballCaught)
+        if (other.gameObject.CompareTag("Ball") && !GameController.ballCaught)
         {
-            var gameController = GameController.instance;
-            Debug.Log("Rebound");
-            var ballRb = other.gameObject.GetComponent<Rigidbody>();
-            var direction = gameController.GetDirection(transform.position, other.transform.position);
-            ballRb.AddForce(paddleForce * Time.deltaTime * -direction);
+            var direction = (Vector2) GameController.GetTargetDirection(transform.position, other.transform.position);
+            var velocity = (Vector2) other.gameObject.GetComponent<Rigidbody>().velocity;
+            //ballRb.AddForce(paddleForce * Time.fixedDeltaTime * velocity * -direction, ForceMode.VelocityChange);
+            GameController.ballRb.AddRelativeForce(3 * velocity * paddleForce * direction);
         }
     }
 }
