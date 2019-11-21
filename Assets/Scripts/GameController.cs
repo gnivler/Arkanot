@@ -19,11 +19,13 @@ public class GameController : MonoBehaviour
     internal static Rigidbody ballRb;
     internal static bool ballCaught;
     internal static int bricks;
+    private static bool firedOnce;
     private static GameObject ball;
     private static Rigidbody playerRb;
     private const float upperBound = 3.3f;
     private const float lowerBound = -7.3f;
     private const float Xbounds = 6.87f;
+    
 
     public void Start()
     {
@@ -52,47 +54,46 @@ public class GameController : MonoBehaviour
             ballCaught = false;
         }
     }
-    
+
     private void FixedUpdate()
     {
         // physical bounces.  maintain velocity..
-        var position =  ballRb.transform.position;
-        var velocity =  ballRb.velocity.magnitude;
- 
-        if (position.y >= upperBound)
+        var position = ballRb.transform.position;
+        var velocity = ballRb.velocity.magnitude;
+
+        if (position.y >= upperBound && !firedOnce)
         {
-            //ballRb.AddForce(velocity * Vector3.down, ForceMode.VelocityChange);
-            var reflect = Vector3.Reflect(position, new Vector3(0, position.normalized.y, 0));
-            ballRb.AddForce(reflect * paddleForce);
+            var reflect = Vector3.Reflect(position, new Vector3(0, position.x, 0));
+            ballRb.AddForce(reflect, ForceMode.VelocityChange);
+            firedOnce = true;
         }
 
-        if (position.x <= -Xbounds)
+        if (position.x <= -Xbounds && !firedOnce)
         {
-            var reflect = Vector3.Reflect(position, new Vector3(position.normalized.x, 0, 0)); 
-            //ballRb.AddForce(velocity * Vector3.right, ForceMode.VelocityChange);
-            ballRb.AddForce(reflect * paddleForce);
+            var reflect = Vector3.Reflect(position, new Vector3(position.y, 0, 0));
+            ballRb.AddForce(reflect, ForceMode.VelocityChange);
         }
 
         if (position.x >= Xbounds)
         {
-
-            var reflect = Vector3.Reflect(position, new Vector3(position.normalized.x, 0, 0)); 
-            ballRb.AddForce(-reflect * paddleForce);
-            //ballRb.AddForce(velocity * Vector3.left, ForceMode.VelocityChange);
+            var reflect = Vector3.Reflect(position, new Vector3(position.y, 0, 0));
+            ballRb.AddForce(reflect, ForceMode.VelocityChange);
         }
 
+        
         // lost the ball
         if (position.y <= lowerBound)
         {
             StartCoroutine(Respawn());
         }
-
+        
+        firedOnce = false;
+        
         if (bricks == 0)
         {
             BuildBoard();
         }
     }
-
 
     private void BuildBoard()
     {
@@ -101,7 +102,7 @@ public class GameController : MonoBehaviour
         var rows = 5;
         var spacing = 0.1825f;
         bricks = columns * rows;
-        var startingPosition = new Vector2(-5.9f,3.3f);
+        var startingPosition = new Vector2(-5.9f, 3.3f);
         var brickWidth = brickPrefabs[0].GetComponent<Transform>().localScale.x;
         var brickHeight = brickPrefabs[0].GetComponent<Transform>().localScale.y;
         var position = startingPosition;
@@ -114,6 +115,7 @@ public class GameController : MonoBehaviour
                 // move it over 
                 position += new Vector2(brickWidth + spacing, 0);
             }
+
             // move it down
             position = startingPosition += new Vector2(0, -brickHeight - spacing);
         }
