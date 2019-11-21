@@ -1,5 +1,4 @@
-﻿using Unity.UNetWeaver;
-using UnityEngine;
+﻿using UnityEngine;
 
 [RequireComponent(typeof(BoxCollider))]
 public class BrickController : MonoBehaviour
