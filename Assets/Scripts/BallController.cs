@@ -57,9 +57,10 @@ public class BallController : MonoBehaviour
     private void OnCollisionEnter(Collision other)
     {
         var speed = Vector3.Magnitude(ballRb.velocity);
-        if (speed < minSpeed)
+        if (speed < minSpeed && !GameController.ballCaught)
         {
-            ballRb.AddForce(RandomVector3() * GameController.instance.paddleForce);
+            Debug.Log("Slow, boosting speed");
+            ballRb.AddForce(RandomVector3() * GameController.instance.paddleForce * 5 );
         }
 
         Vector3 RandomVector3()

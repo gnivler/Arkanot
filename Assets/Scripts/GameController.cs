@@ -58,19 +58,27 @@ public class GameController : MonoBehaviour
         // physical bounces.  maintain velocity..
         var position =  ballRb.transform.position;
         var velocity =  ballRb.velocity.magnitude;
+ 
         if (position.y >= upperBound)
         {
-            ballRb.AddForce(velocity * Vector3.down, ForceMode.VelocityChange);
+            //ballRb.AddForce(velocity * Vector3.down, ForceMode.VelocityChange);
+            var reflect = Vector3.Reflect(position, new Vector3(0, position.normalized.y, 0));
+            ballRb.AddForce(reflect * paddleForce);
         }
 
         if (position.x <= -Xbounds)
         {
-            ballRb.AddForce(velocity * Vector3.right, ForceMode.VelocityChange);
+            var reflect = Vector3.Reflect(position, new Vector3(position.normalized.x, 0, 0)); 
+            //ballRb.AddForce(velocity * Vector3.right, ForceMode.VelocityChange);
+            ballRb.AddForce(reflect * paddleForce);
         }
 
         if (position.x >= Xbounds)
         {
-            ballRb.AddForce(velocity * Vector3.left, ForceMode.VelocityChange);
+
+            var reflect = Vector3.Reflect(position, new Vector3(position.normalized.x, 0, 0)); 
+            ballRb.AddForce(-reflect * paddleForce);
+            //ballRb.AddForce(velocity * Vector3.left, ForceMode.VelocityChange);
         }
 
         // lost the ball
@@ -90,7 +98,7 @@ public class GameController : MonoBehaviour
     {
         // board dimensions
         var columns = 11;
-        var rows = 10;
+        var rows = 5;
         var spacing = 0.1825f;
         bricks = columns * rows;
         var startingPosition = new Vector2(-5.9f,3.3f);
@@ -106,7 +114,6 @@ public class GameController : MonoBehaviour
                 // move it over 
                 position += new Vector2(brickWidth + spacing, 0);
             }
-
             // move it down
             position = startingPosition += new Vector2(0, -brickHeight - spacing);
         }
